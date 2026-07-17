@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harshith A. — Data Analyst · Analytics Engineer · AI/ML</title>
+<meta name="description" content="Portfolio of Harshith A. — Data Analyst and Analytics Engineer specializing in ETL pipelines, BI, and applied machine learning.">
+<style>
+  :root{
+    --bg: #0d1117;
+    --bg-alt: #0a0e14;
+    --surface: #151b26;
+    --surface-2: #1c2431;
+    --border: #2a3342;
+    --text: #e6edf3;
+    --text-dim: #9aa4b8;
+    --text-faint: #626d82;
+    --accent: #4ec9b0;
+    --accent-2: #d2a8ff;
+    --accent-3: #f2c078;
+    --radius: 10px;
+    --sidebar-w: 380px;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{ scroll-behavior: smooth; overflow-x: hidden; }
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  a{ color: inherit; text-decoration: none; }
+  ::selection{ background: var(--accent); color: #061019; }
+  code, .mono{ font-family: var(--mono); }
+
+  /* background ambience — animated falling-code canvas + neon glow + grain */
+  #matrixCanvas{
+    position: fixed; inset: 0; z-index: -4; pointer-events: none; display:block;
+  }
+  .bg-glow{
+    position: fixed; inset: 0; z-index: -3; pointer-events: none; mix-blend-mode: screen;
+    background:
+      radial-gradient(650px circle at 12% 6%, rgba(78,201,176,0.16), transparent 48%),
+      radial-gradient(700px circle at 88% 18%, rgba(210,168,255,0.12), transparent 45%),
+      radial-gradient(650px circle at 50% 92%, rgba(242,192,120,0.08), transparent 50%);
+  }
+  .noise{
+    position: fixed; inset:0; z-index:-2; opacity:0.045; pointer-events:none; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ===== layout: fixed identity sidebar + scrolling content column ===== */
+  .layout{ display:flex; align-items: flex-start; min-height: 100vh; }
+
+  .sidebar{
+    width: var(--sidebar-w); flex-shrink:0;
+    position: sticky; top:0; height:100vh; overflow-y:auto;
+    padding: 56px 44px 36px;
+    border-right: 1px solid var(--border);
+    display:flex; flex-direction:column; justify-content:space-between;
+    background: rgba(10,14,20,0.94); backdrop-filter: blur(6px);
+  }
+  .sidebar::-webkit-scrollbar{ width:0; }
+
+  .identity{ display:flex; flex-direction:column; align-items:flex-start; }
+
+  /* photo — clean framed portrait with a constellation halo, scaled for the sidebar */
+  .photo-stage{ position: relative; width: 100%; max-width: 190px; margin-bottom: 26px; }
+  .hero-network{ position: absolute; width: min(230%, 340px); aspect-ratio: 1 / 1; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 0; pointer-events:none; mix-blend-mode: screen; }
+  .photo-frame{ position: relative; width: 100%; z-index: 1; }
+  .photo-frame .ring{
+    padding: 4px; border-radius: 20px;
+    background: linear-gradient(145deg, var(--accent), var(--accent-2));
+    box-shadow: 0 0 28px rgba(78,201,176,0.18), 0 20px 40px rgba(0,0,0,0.45);
+  }
+  .photo-frame .photo-wrap{
+    position: relative; aspect-ratio: 4 / 5; border-radius: 16px; overflow: hidden;
+    background: var(--surface-2);
+  }
+  .photo-frame .photo-wrap img{ width:100%; height:100%; object-fit: cover; display:block; }
+  .photo-frame .badge{
+    position: absolute; left: 12px; bottom: -14px;
+    display:flex; align-items:center; gap:6px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 7px 11px; box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    font-size: 0.72rem; font-weight: 600; color: var(--text); white-space: nowrap;
+    font-family: var(--mono);
+  }
+  .photo-frame .badge svg{ color: var(--accent); flex-shrink:0; }
+
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:7px;
+    font-size: 0.7rem; font-weight: 600; color: var(--accent); font-family: var(--mono);
+    background: rgba(78,201,176,0.09); border: 1px solid rgba(78,201,176,0.28);
+    padding: 5px 12px; border-radius: 6px; margin-bottom: 18px;
+  }
+  .eyebrow .dot{ width:6px; height:6px; border-radius:50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: blink 1.6s ease-in-out infinite; }
+  @keyframes blink{ 0%,100%{ opacity:1; } 50%{ opacity:0.25; } }
+  @keyframes cursorblink{ 0%,55%{ opacity:1; } 56%,100%{ opacity:0; } }
+
+  .sidebar .name{
+    font-size: clamp(1.5rem, 2.4vw, 1.9rem); font-weight: 700; letter-spacing: -0.5px; line-height:1.1;
+    margin-bottom: 8px; font-family: var(--mono);
+  }
+  .sidebar .name::before{ content: '> '; color: var(--accent); }
+  .sidebar .role{ font-size: 0.94rem; color: var(--text-dim); font-weight: 600; margin-bottom: 16px; font-family: var(--mono); }
+  .sidebar .role .cursor{ display:inline-block; color: var(--accent); animation: cursorblink 1s step-end infinite; }
+  .sidebar .tagline{ font-size: 0.92rem; color: var(--text-dim); margin-bottom: 26px; max-width: 280px; }
+  .sidebar .tagline::before{ content: '// '; color: var(--text-faint); font-family: var(--mono); }
+
+  .cta-row{ display:flex; flex-wrap: wrap; gap: 10px; margin-bottom: 6px; }
+  .btn{
+    padding: 10px 18px; border-radius: 8px; font-size: 0.84rem; font-weight: 600; font-family: var(--mono);
+    display:inline-flex; align-items:center; gap:8px; transition: transform .2s, box-shadow .2s, background .2s;
+    border: 1px solid transparent;
+  }
+  .btn-primary{ background: var(--accent); color: #061019; }
+  .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 10px 24px rgba(78,201,176,0.32); }
+  .btn-ghost{ border-color: var(--border); color: var(--text); background: var(--bg); }
+  .btn-ghost:hover{ border-color: var(--accent); color: var(--accent); background: var(--surface-2); transform: translateY(-2px); }
+
+  /* numbered index nav — sticky sidebar's signature element */
+  .side-nav{ margin: 40px 0; }
+  .side-nav ol{ list-style:none; }
+  .side-nav a{
+    display:flex; align-items:center; gap: 12px; font-family: var(--mono);
+    padding: 9px 0; font-size: 0.88rem; font-weight: 600; color: var(--text-dim);
+    transition: color .2s, gap .2s, padding-left .2s;
+  }
+  .side-nav a::before{
+    content: attr(data-idx); font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
+    color: var(--text-faint); transition: color .2s;
+  }
+  .side-nav a:hover{ color: var(--text); padding-left: 4px; }
+  .side-nav a.active{ color: var(--accent); }
+  .side-nav a.active::before{ color: var(--accent); }
+
+  .social-row{ display:flex; gap: 12px; }
+  .social-row a{
+    width: 38px; height: 38px; border: 1px solid var(--border); border-radius: 10px;
+    display:flex; align-items:center; justify-content:center; color: var(--text-dim);
+    transition: all .2s; background: var(--surface);
+  }
+  .social-row a:hover{ color: var(--accent); border-color: var(--accent); transform: translateY(-2px); }
+
+  /* themed illustration — a coding/thinking flourish above the About intro, always in view on load */
+  .hero-art{ display:flex; justify-content:flex-end; margin: -6px 0 10px; }
+  .hero-art svg{ display:block; width: 190px; height:auto; animation: floaty 5s ease-in-out infinite; }
+  @keyframes floaty{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-7px); } }
+  @media (max-width: 640px){ .hero-art svg{ width: 140px; } }
+
+  .content{ flex: 1; min-width: 0; padding: 48px 32px 60px; display:flex; justify-content:center; }
+  .content-inner{
+    max-width: 1000px; width:100%;
+    background: rgba(13,17,23,0.82); backdrop-filter: blur(4px);
+    border: 1px solid var(--border); border-radius: 18px;
+    padding: 6px 56px 52px;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.5);
+  }
+
+  @media (max-width: 968px){
+    .layout{ flex-direction: column; }
+    .sidebar{
+      position: static; width: 100%; height: auto; overflow: visible;
+      border-right: none; border-bottom: 1px solid var(--border);
+      padding: 56px 24px 40px; flex-direction: row; align-items:flex-start; gap: 40px; flex-wrap: wrap;
+    }
+    .identity{ flex: 1 1 260px; }
+    .side-nav{ margin: 24px 0 0; flex: 1 1 100%; }
+    .side-nav ol{ display:flex; flex-wrap: wrap; gap: 8px 22px; }
+    .social-row{ flex: 0 0 100%; margin-top: 4px; }
+    .content{ padding: 32px 16px 40px; }
+    .content-inner{ padding: 6px 24px 32px; }
+  }
+  @media (max-width: 520px){
+    .sidebar{ padding: 44px 20px 32px; }
+    .photo-stage{ max-width: 150px; }
+    .content{ padding: 24px 10px 32px; }
+    .content-inner{ padding: 6px 16px 28px; border-radius: 14px; }
+  }
+
+  /* section shell */
+  section{ padding: 56px 0; border-top: 1px solid var(--border); }
+  .content-inner > section:first-child{ border-top: none; padding-top: 0; }
+  .section-head{ margin-bottom: 40px; }
+  .kicker{
+    color: var(--accent); font-size: 0.82rem; font-weight: 600; letter-spacing: 0.3px;
+    margin-bottom: 10px; display:flex; align-items:center; gap:8px; font-family: var(--mono);
+  }
+  .kicker::before{ content: '//'; color: var(--text-faint); }
+  .kicker .idx{ font-family: var(--mono); color: var(--text-faint); letter-spacing: 0; }
+  .section-head h2{ font-size: clamp(1.4rem, 2.8vw, 1.85rem); font-weight: 700; letter-spacing: -0.3px; font-family: var(--mono); }
+
+  /* about / stats */
+  .about-grid{ display:grid; grid-template-columns: 1fr; gap: 32px; align-items: start; }
+  .about-grid p{ color: var(--text-dim); margin-bottom: 16px; font-size: 1rem; max-width: 700px; }
+  .stats{ display:grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+  .stat{ background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.35); }
+  .stat .num{ font-size: 1.4rem; font-weight: 800; color: var(--accent); font-family: var(--mono); }
+  .stat .label{ font-size: 0.76rem; color: var(--text-dim); margin-top: 4px; }
+  @media (max-width: 640px){ .stats{ grid-template-columns: 1fr 1fr; } }
+
+  /* experience timeline */
+  .timeline{ position: relative; }
+  .timeline::before{
+    content:''; position:absolute; left: 9px; top: 8px; bottom: 8px; width: 2px;
+    background: linear-gradient(180deg, var(--accent), var(--accent-2), transparent);
+  }
+  .tl-item{ position: relative; padding-left: 42px; margin-bottom: 44px; }
+  .tl-item:last-child{ margin-bottom: 0; }
+  .tl-dot{
+    position:absolute; left: 0; top: 4px; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--bg); border: 2px solid var(--accent);
+  }
+  .tl-dot::after{ content:''; position:absolute; inset:4px; border-radius:50%; background: var(--accent); }
+  .tl-head{ display:flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: baseline; margin-bottom: 4px; }
+  .tl-role{ font-size: 1.02rem; font-weight: 700; font-family: var(--mono); }
+  .tl-company{ color: var(--accent-2); font-weight: 600; }
+  .tl-meta{ color: var(--text-faint); font-size: 0.8rem; font-family: var(--mono); }
+  .tl-item ul{ margin-top: 12px; padding-left: 20px; color: var(--text-dim); font-size: 0.94rem; max-width: 700px; }
+  .tl-item li{ margin-bottom: 8px; }
+  .tl-item li::marker{ color: var(--accent); }
+
+  /* skills */
+  .skill-groups{ display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 18px; }
+  .skill-card{ background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: 0 4px 14px rgba(0,0,0,0.35); }
+  .skill-card h3{ font-size: 0.86rem; color: var(--text); margin-bottom: 12px; display:flex; align-items:center; gap:8px; font-family: var(--mono); }
+  .skill-card h3::before{ content:'▸'; color: var(--accent); display:inline-block; }
+  .chips{ display:flex; flex-wrap: wrap; gap: 8px; }
+  .chip{
+    font-size: 0.76rem; padding: 6px 11px; border-radius: 6px; color: var(--accent-2);
+    background: var(--surface-2); border: 1px solid var(--border); transition: all .2s; font-family: var(--mono);
+  }
+  .chip::before{ content: '<'; color: var(--text-faint); margin-right: 1px; }
+  .chip::after{ content: '/>'; color: var(--text-faint); margin-left: 1px; }
+  .chip:hover{ color: var(--accent); border-color: var(--accent); }
+
+  /* code-window chrome — traffic-light bar used on Projects & Contact panels */
+  .win-bar{
+    display:flex; align-items:center; gap: 7px;
+    padding: 11px 16px; background: var(--surface-2); border-bottom: 1px solid var(--border);
+  }
+  .win-bar .dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .win-bar .dot.r{ background:#ff5f57; }
+  .win-bar .dot.y{ background:#febc2e; }
+  .win-bar .dot.g{ background:#28c840; }
+  .win-bar .tab{ margin-left: 8px; font-family: var(--mono); font-size:0.78rem; color: var(--text-dim); }
+
+  /* projects */
+  .project-card{
+    background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .project-card:hover{ transform: translateY(-3px); box-shadow: 0 0 0 1px var(--accent), 0 14px 30px rgba(0,0,0,0.5); }
+  .project-card .card-body{ padding: 26px; }
+  .project-card h3{ font-size: 1.1rem; margin-bottom: 10px; font-family: var(--mono); font-weight: 700; }
+  .project-card .desc{ color: var(--text-dim); margin-bottom: 16px; font-size: 0.95rem; }
+  .project-links{ display:flex; gap: 12px; flex-wrap: wrap; }
+
+  /* education */
+  .edu-card{
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px 22px; margin-bottom: 14px; display:flex; justify-content: space-between; flex-wrap: wrap; gap:8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  }
+  .edu-card h3{ font-size: 0.96rem; margin-bottom: 4px; font-family: var(--mono); }
+  .edu-card .school{ color: var(--accent-2); font-weight: 600; font-size: 0.9rem; }
+  .edu-card .meta{ color: var(--text-faint); font-size: 0.83rem; text-align: right; font-family: var(--mono); }
+
+  /* contact / footer */
+  .contact-box{
+    text-align:left; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+  }
+  .contact-box .card-body{ padding: 40px 36px; }
+  .contact-box h2{ font-size: clamp(1.4rem, 3vw, 1.85rem); font-weight: 700; margin-bottom: 12px; font-family: var(--mono); }
+  .contact-box p{ color: var(--text-dim); margin-bottom: 26px; }
+  footer{ text-align:left; padding: 30px 0 10px; color: var(--text-faint); font-size: 0.83rem; font-family: var(--mono); }
+
+  /* reveal animation */
+  .reveal{ opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.in{ opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+<canvas id="matrixCanvas" aria-hidden="true"></canvas>
+<div class="bg-glow"></div>
+<div class="noise"></div>
+
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="identity">
+      <div class="photo-stage">
+        <svg viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg" class="hero-network" aria-hidden="true">
+<defs>
+<linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0%" stop-color="#4ec9b0"/>
+<stop offset="100%" stop-color="#d2a8ff"/>
+</linearGradient>
+<radialGradient id="dotGrad"><stop offset="0%" stop-color="#6ee7c5"/><stop offset="100%" stop-color="#2f9c86"/></radialGradient>
+<radialGradient id="dotGradHub"><stop offset="0%" stop-color="#e2c4ff"/><stop offset="100%" stop-color="#a76bea"/></radialGradient>
+</defs>
+<line x1="498.7" y1="581.6" x2="457.8" y2="551.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.09"/><line x1="322.1" y1="70.9" x2="340.3" y2="101.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.18"/><line x1="502.7" y1="537.6" x2="500.3" y2="523.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.31"/><line x1="518.5" y1="448.8" x2="517.9" y2="431.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.29"/><line x1="430.3" y1="571.0" x2="451.9" y2="561.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.25"/><line x1="262.2" y1="563.1" x2="283.0" y2="543.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="87.5" y1="439.0" x2="91.6" y2="426.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.32"/><line x1="576.1" y1="432.7" x2="586.2" y2="437.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.33"/><line x1="123.5" y1="527.3" x2="126.7" y2="500.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.23"/><line x1="273.1" y1="47.8" x2="241.4" y2="53.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.20"/><line x1="537.2" y1="393.1" x2="556.7" y2="381.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="537.2" y1="393.1" x2="529.9" y2="433.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.15"/><line x1="479.5" y1="251.8" x2="465.4" y2="222.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.20"/><line x1="104.8" y1="221.0" x2="92.3" y2="201.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="165.7" y1="393.8" x2="121.8" y2="387.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.13"/><line x1="561.2" y1="312.7" x2="576.4" y2="313.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.31"/><line x1="529.9" y1="433.8" x2="502.1" y2="429.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.23"/><line x1="517.9" y1="431.0" x2="502.1" y2="429.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.30"/><line x1="274.9" y1="100.3" x2="274.4" y2="144.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.13"/><line x1="160.7" y1="180.8" x2="183.6" y2="182.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="558.2" y1="198.5" x2="530.3" y2="202.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.23"/><line x1="262.2" y1="563.1" x2="248.8" y2="574.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.29"/><line x1="195.6" y1="156.9" x2="177.1" y2="152.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.28"/><line x1="389.0" y1="534.5" x2="368.3" y2="566.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.17"/><line x1="271.2" y1="105.4" x2="274.4" y2="144.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="301.3" y1="556.4" x2="314.0" y2="548.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.31"/><line x1="68.7" y1="433.0" x2="56.8" y2="422.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.30"/><line x1="327.1" y1="588.2" x2="329.9" y2="616.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="431.9" y1="572.9" x2="430.3" y2="571.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.38"/><line x1="87.5" y1="439.0" x2="87.0" y2="429.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.34"/><line x1="368.3" y1="566.5" x2="360.5" y2="598.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.20"/><line x1="100.7" y1="433.8" x2="105.3" y2="415.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.28"/><line x1="158.5" y1="115.4" x2="123.6" y2="122.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.18"/><line x1="588.5" y1="173.9" x2="562.1" y2="129.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.08"/><line x1="575.5" y1="199.2" x2="618.3" y2="214.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.12"/><line x1="511.5" y1="494.1" x2="522.5" y2="479.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.29"/><line x1="498.7" y1="581.6" x2="502.7" y2="537.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.13"/><line x1="101.3" y1="322.1" x2="95.0" y2="367.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.12"/><line x1="87.0" y1="429.8" x2="85.8" y2="437.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.35"/><line x1="588.5" y1="173.9" x2="618.3" y2="214.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.09"/><line x1="311.3" y1="131.8" x2="274.4" y2="144.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="533.5" y1="463.0" x2="522.5" y2="479.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.28"/><line x1="570.5" y1="265.3" x2="560.1" y2="219.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.11"/><line x1="559.8" y1="500.4" x2="522.5" y2="479.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.14"/><line x1="88.7" y1="397.9" x2="43.9" y2="386.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.12"/><line x1="479.5" y1="251.8" x2="508.3" y2="240.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.21"/><line x1="85.8" y1="437.1" x2="56.8" y2="422.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.20"/><line x1="96.8" y1="221.5" x2="92.3" y2="201.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.28"/><line x1="262.2" y1="563.1" x2="227.2" y2="594.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.11"/><line x1="158.5" y1="115.4" x2="165.7" y2="95.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.27"/><line x1="328.2" y1="609.0" x2="329.9" y2="616.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.35"/><line x1="321.1" y1="107.1" x2="340.3" y2="101.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.28"/><line x1="68.0" y1="367.9" x2="95.0" y2="367.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.23"/><line x1="123.5" y1="527.3" x2="165.2" y2="529.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.14"/><line x1="82.5" y1="239.2" x2="102.5" y2="227.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="159.7" y1="234.2" x2="171.2" y2="256.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.24"/><line x1="131.5" y1="118.0" x2="123.6" y2="122.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.35"/><line x1="518.5" y1="448.8" x2="502.1" y2="429.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.24"/><line x1="185.3" y1="185.4" x2="183.6" y2="182.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.38"/><line x1="328.2" y1="609.0" x2="309.2" y2="593.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.25"/><line x1="87.0" y1="429.8" x2="91.6" y2="426.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.37"/><line x1="230.1" y1="113.3" x2="220.0" y2="65.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.10"/><line x1="558.2" y1="198.5" x2="560.1" y2="219.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.27"/><line x1="581.9" y1="274.7" x2="576.4" y2="313.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="524.6" y1="509.0" x2="500.3" y2="523.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="418.0" y1="83.6" x2="448.5" y2="52.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.13"/><line x1="372.2" y1="575.9" x2="368.3" y2="566.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.34"/><line x1="166.1" y1="155.1" x2="160.7" y2="180.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.24"/><line x1="68.0" y1="367.9" x2="43.9" y2="386.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.21"/><line x1="110.1" y1="138.7" x2="123.6" y2="122.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.27"/><line x1="529.9" y1="433.8" x2="518.5" y2="448.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.28"/><line x1="201.6" y1="172.1" x2="195.6" y2="156.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.30"/><line x1="123.5" y1="527.3" x2="122.8" y2="552.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.25"/><line x1="227.2" y1="594.2" x2="248.8" y2="574.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="239.0" y1="572.4" x2="227.2" y2="594.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.25"/><line x1="558.5" y1="215.1" x2="560.1" y2="219.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.37"/><line x1="85.8" y1="437.1" x2="91.6" y2="426.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.33"/><line x1="468.8" y1="204.7" x2="465.4" y2="222.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.29"/><line x1="105.3" y1="415.2" x2="91.6" y2="426.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.29"/><line x1="360.4" y1="141.3" x2="373.7" y2="105.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="126.7" y1="500.3" x2="165.2" y2="529.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.10"/><line x1="87.0" y1="429.8" x2="105.3" y2="415.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="373.7" y1="105.2" x2="340.3" y2="101.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.19"/><line x1="88.7" y1="397.9" x2="95.0" y2="367.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.21"/><line x1="314.0" y1="548.0" x2="299.5" y2="550.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.31"/><line x1="307.7" y1="598.6" x2="327.1" y2="588.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="504.9" y1="189.4" x2="499.4" y2="190.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.37"/><line x1="262.2" y1="95.6" x2="230.1" y2="113.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.17"/><line x1="550.9" y1="167.7" x2="562.1" y2="129.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="473.1" y1="533.5" x2="500.3" y2="523.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="301.3" y1="556.4" x2="299.5" y2="550.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.36"/><line x1="552.4" y1="205.6" x2="530.3" y2="202.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="431.9" y1="572.9" x2="451.9" y2="561.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="473.1" y1="533.5" x2="464.0" y2="482.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.08"/><line x1="576.1" y1="432.7" x2="588.8" y2="389.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.13"/><line x1="87.5" y1="439.0" x2="85.8" y2="437.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.38"/><line x1="504.9" y1="189.4" x2="468.8" y2="204.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="558.5" y1="215.1" x2="575.5" y2="199.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="181.9" y1="90.9" x2="165.7" y2="95.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.30"/><line x1="328.2" y1="609.0" x2="360.5" y2="598.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.19"/><line x1="123.5" y1="527.3" x2="100.0" y2="529.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="565.7" y1="484.6" x2="585.0" y2="461.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="504.9" y1="189.4" x2="530.3" y2="202.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.23"/><line x1="586.2" y1="437.3" x2="585.0" y2="461.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.25"/><line x1="589.8" y1="458.0" x2="586.2" y2="437.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.27"/><line x1="307.7" y1="598.6" x2="309.2" y2="593.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.37"/><line x1="354.9" y1="45.4" x2="322.1" y2="70.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.14"/><line x1="594.7" y1="293.0" x2="570.5" y2="265.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.17"/><line x1="271.2" y1="105.4" x2="273.8" y2="73.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.20"/><line x1="530.3" y1="202.1" x2="508.3" y2="240.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.13"/><line x1="327.1" y1="588.2" x2="328.2" y2="609.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.27"/><line x1="88.7" y1="397.9" x2="91.6" y2="426.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="468.8" y1="204.7" x2="499.4" y2="190.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.19"/><line x1="307.7" y1="598.6" x2="329.9" y2="616.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="518.5" y1="448.8" x2="533.5" y2="463.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.27"/><line x1="389.0" y1="534.5" x2="424.2" y2="551.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="262.2" y1="95.6" x2="273.8" y2="73.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.25"/><line x1="301.3" y1="556.4" x2="283.0" y2="543.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="508.1" y1="191.5" x2="504.9" y2="189.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.38"/><line x1="508.1" y1="191.5" x2="530.3" y2="202.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.25"/><line x1="108.5" y1="340.3" x2="95.0" y2="367.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.21"/><line x1="88.7" y1="397.9" x2="105.3" y2="415.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.25"/><line x1="524.6" y1="509.0" x2="522.5" y2="479.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="100.7" y1="433.8" x2="91.6" y2="426.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.33"/><line x1="131.5" y1="118.0" x2="110.1" y2="138.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="201.6" y1="172.1" x2="223.0" y2="139.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="107.7" y1="328.5" x2="101.3" y2="322.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.34"/><line x1="273.8" y1="73.6" x2="241.4" y2="53.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="430.3" y1="571.0" x2="423.3" y2="611.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.15"/><line x1="576.1" y1="432.7" x2="585.0" y2="461.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.21"/><line x1="314.0" y1="548.0" x2="283.0" y2="543.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.21"/><line x1="508.3" y1="240.4" x2="465.4" y2="222.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.11"/><line x1="274.9" y1="100.3" x2="273.8" y2="73.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.24"/><line x1="307.7" y1="598.6" x2="297.8" y2="638.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.15"/><line x1="576.1" y1="432.7" x2="589.8" y2="458.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="552.4" y1="205.6" x2="560.1" y2="219.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.30"/><line x1="220.0" y1="65.1" x2="241.4" y2="53.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.25"/><line x1="360.4" y1="141.3" x2="311.3" y2="131.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.09"/><line x1="558.2" y1="198.5" x2="550.9" y2="167.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.20"/><line x1="166.1" y1="155.1" x2="177.1" y2="152.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.33"/><line x1="402.4" y1="581.2" x2="423.3" y2="611.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.18"/><line x1="479.5" y1="251.8" x2="468.8" y2="204.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.10"/><line x1="271.2" y1="105.4" x2="262.2" y2="95.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.32"/><line x1="565.7" y1="484.6" x2="559.8" y2="500.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.30"/><line x1="121.8" y1="387.8" x2="88.7" y2="397.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.19"/><line x1="498.7" y1="581.6" x2="525.6" y2="566.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.21"/><line x1="586.2" y1="437.3" x2="604.9" y2="405.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.17"/><line x1="418.0" y1="83.6" x2="373.7" y2="105.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.10"/><line x1="372.2" y1="575.9" x2="360.5" y2="598.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.24"/><line x1="262.2" y1="563.1" x2="239.0" y2="572.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.25"/><line x1="158.5" y1="115.4" x2="131.5" y2="118.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.23"/><line x1="524.6" y1="509.0" x2="502.7" y2="537.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.18"/><line x1="124.1" y1="164.0" x2="123.6" y2="122.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.14"/><line x1="104.8" y1="221.0" x2="96.8" y2="221.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.35"/><line x1="328.2" y1="609.0" x2="297.8" y2="638.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.14"/><line x1="430.3" y1="571.0" x2="424.2" y2="551.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.28"/><line x1="148.5" y1="198.5" x2="159.7" y2="234.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.17"/><line x1="431.9" y1="572.9" x2="424.2" y2="551.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="307.7" y1="598.6" x2="328.2" y2="609.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="329.9" y1="616.8" x2="297.8" y2="638.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="68.7" y1="433.0" x2="85.8" y2="437.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.29"/><line x1="56.8" y1="422.6" x2="43.9" y2="386.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="68.7" y1="433.0" x2="87.0" y2="429.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.29"/><line x1="633.2" y1="307.1" x2="594.7" y2="293.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.15"/><line x1="126.7" y1="500.3" x2="100.0" y2="529.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="635.0" y1="335.7" x2="642.0" y2="360.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.24"/><line x1="556.7" y1="381.0" x2="588.8" y2="389.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.20"/><line x1="465.4" y1="222.0" x2="499.4" y2="190.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.12"/><line x1="181.9" y1="90.9" x2="220.0" y2="65.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.12"/><line x1="537.2" y1="393.1" x2="517.9" y2="431.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.14"/><line x1="558.2" y1="198.5" x2="558.5" y2="215.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.30"/><line x1="160.7" y1="180.8" x2="148.5" y2="198.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.27"/><line x1="581.9" y1="274.7" x2="594.7" y2="293.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="511.5" y1="494.1" x2="500.3" y2="523.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.20"/><line x1="473.1" y1="533.5" x2="502.7" y2="537.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="201.6" y1="172.1" x2="183.6" y2="182.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.27"/><line x1="201.6" y1="172.1" x2="185.3" y2="185.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.27"/><line x1="581.9" y1="274.7" x2="570.5" y2="265.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.31"/><line x1="107.7" y1="328.5" x2="108.5" y2="340.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.33"/><line x1="618.3" y1="214.6" x2="624.3" y2="236.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="561.2" y1="312.7" x2="562.2" y2="339.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.24"/><line x1="109.2" y1="472.3" x2="106.8" y2="479.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.35"/><line x1="502.7" y1="537.6" x2="525.6" y2="566.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.17"/><line x1="575.5" y1="199.2" x2="588.5" y2="173.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.23"/><line x1="565.7" y1="484.6" x2="589.8" y2="458.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.18"/><line x1="486.1" y1="135.5" x2="473.4" y2="127.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.31"/><line x1="511.5" y1="494.1" x2="464.0" y2="482.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.10"/><line x1="576.1" y1="432.7" x2="604.9" y2="405.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="604.9" y1="405.7" x2="588.8" y2="389.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="529.9" y1="433.8" x2="533.5" y2="463.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="558.2" y1="198.5" x2="552.4" y2="205.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.34"/><line x1="402.4" y1="581.2" x2="368.3" y2="566.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.17"/><line x1="360.4" y1="141.3" x2="340.3" y2="101.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.13"/><line x1="166.1" y1="155.1" x2="195.6" y2="156.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="87.0" y1="429.8" x2="100.7" y2="433.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.31"/><line x1="239.0" y1="572.4" x2="248.8" y2="574.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.34"/><line x1="562.2" y1="339.1" x2="576.4" y2="313.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="545.7" y1="128.6" x2="562.1" y2="129.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.30"/><line x1="424.2" y1="551.8" x2="451.9" y2="561.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="502.7" y1="537.6" x2="547.2" y2="560.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.09"/><line x1="431.9" y1="572.9" x2="423.3" y2="611.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="88.7" y1="397.9" x2="68.0" y2="367.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.18"/><line x1="131.5" y1="118.0" x2="165.7" y2="95.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.15"/><line x1="124.1" y1="164.0" x2="110.1" y2="138.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="195.6" y1="156.9" x2="223.0" y2="139.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.20"/><line x1="160.7" y1="180.8" x2="185.3" y2="185.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.25"/><line x1="594.7" y1="293.0" x2="576.4" y2="313.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.23"/><line x1="594.7" y1="293.0" x2="561.2" y2="312.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="430.3" y1="571.0" x2="402.8" y2="527.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.08"/><line x1="262.2" y1="95.6" x2="273.1" y2="47.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.10"/><line x1="104.8" y1="221.0" x2="102.5" y2="227.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.36"/><line x1="283.0" y1="543.6" x2="299.5" y2="550.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.29"/><line x1="104.8" y1="221.0" x2="82.5" y2="239.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="550.9" y1="167.7" x2="545.7" y2="128.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="529.9" y1="433.8" x2="517.9" y2="431.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.32"/><line x1="87.0" y1="429.8" x2="56.8" y2="422.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.21"/><line x1="82.5" y1="239.2" x2="96.8" y2="221.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="100.0" y1="529.7" x2="122.8" y2="552.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.20"/><line x1="558.2" y1="198.5" x2="575.5" y2="199.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.29"/><line x1="550.9" y1="167.7" x2="588.5" y2="173.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.17"/><line x1="424.2" y1="551.8" x2="457.8" y2="551.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.19"/><line x1="321.1" y1="107.1" x2="311.3" y2="131.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.24"/><line x1="109.2" y1="472.3" x2="100.7" y2="433.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="322.1" y1="70.9" x2="321.1" y2="107.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.18"/><line x1="327.1" y1="588.2" x2="309.2" y2="593.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.29"/><line x1="96.8" y1="221.5" x2="102.5" y2="227.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.35"/><line x1="424.2" y1="551.8" x2="402.8" y2="527.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.20"/><line x1="274.9" y1="100.3" x2="262.2" y2="95.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.32"/><line x1="230.1" y1="113.3" x2="223.0" y2="139.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.23"/><line x1="195.6" y1="156.9" x2="183.6" y2="182.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.23"/><line x1="402.4" y1="581.2" x2="430.3" y2="571.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="165.2" y1="529.0" x2="122.8" y2="552.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.10"/><line x1="107.7" y1="328.5" x2="95.0" y2="367.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.15"/><line x1="451.9" y1="561.1" x2="457.8" y2="551.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.33"/><line x1="101.3" y1="322.1" x2="108.5" y2="340.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.28"/><line x1="389.0" y1="534.5" x2="402.8" y2="527.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.30"/><line x1="177.1" y1="152.4" x2="183.6" y2="182.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.21"/><line x1="633.2" y1="307.1" x2="635.0" y2="335.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="524.6" y1="509.0" x2="511.5" y2="494.1" stroke="url(#lineGrad)" stroke-width="1" opacity="0.28"/><line x1="271.2" y1="105.4" x2="230.1" y2="113.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.14"/><line x1="311.3" y1="131.8" x2="340.3" y2="101.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.14"/><line x1="402.4" y1="581.2" x2="372.2" y2="575.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.21"/><line x1="550.9" y1="167.7" x2="552.4" y2="205.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.17"/><line x1="431.9" y1="572.9" x2="402.4" y2="581.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.21"/><line x1="589.8" y1="458.0" x2="585.0" y2="461.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.36"/><line x1="558.2" y1="198.5" x2="588.5" y2="173.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="121.8" y1="387.8" x2="105.3" y2="415.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.20"/><line x1="524.6" y1="509.0" x2="559.8" y2="500.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.18"/><line x1="87.5" y1="439.0" x2="106.8" y2="479.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.12"/><line x1="562.2" y1="339.1" x2="556.7" y2="381.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.14"/><line x1="530.3" y1="202.1" x2="499.4" y2="190.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.20"/><line x1="126.7" y1="500.3" x2="106.8" y2="479.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.22"/><line x1="148.5" y1="198.5" x2="183.6" y2="182.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.16"/><line x1="92.3" y1="201.9" x2="102.5" y2="227.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.23"/><line x1="273.8" y1="73.6" x2="273.1" y2="47.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.24"/><line x1="558.5" y1="215.1" x2="552.4" y2="205.6" stroke="url(#lineGrad)" stroke-width="1" opacity="0.33"/><line x1="508.1" y1="191.5" x2="499.4" y2="190.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.35"/><line x1="473.1" y1="533.5" x2="457.8" y2="551.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.25"/><line x1="274.9" y1="100.3" x2="271.2" y2="105.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.36"/><line x1="87.5" y1="439.0" x2="100.7" y2="433.8" stroke="url(#lineGrad)" stroke-width="1" opacity="0.31"/><line x1="126.7" y1="500.3" x2="109.2" y2="472.3" stroke="url(#lineGrad)" stroke-width="1" opacity="0.20"/><line x1="165.2" y1="529.0" x2="207.0" y2="518.7" stroke="url(#lineGrad)" stroke-width="1" opacity="0.14"/><line x1="525.6" y1="566.9" x2="547.2" y2="560.4" stroke="url(#lineGrad)" stroke-width="1" opacity="0.26"/><line x1="552.4" y1="205.6" x2="575.5" y2="199.2" stroke="url(#lineGrad)" stroke-width="1" opacity="0.25"/><line x1="158.5" y1="115.4" x2="181.9" y2="90.9" stroke="url(#lineGrad)" stroke-width="1" opacity="0.19"/><line x1="160.7" y1="180.8" x2="124.1" y2="164.0" stroke="url(#lineGrad)" stroke-width="1" opacity="0.15"/><line x1="121.8" y1="387.8" x2="95.0" y2="367.5" stroke="url(#lineGrad)" stroke-width="1" opacity="0.19"/>
+<circle cx="165.7" cy="393.8" r="2.4" fill="url(#dotGrad)"/><circle cx="121.8" cy="387.8" r="2.3" fill="url(#dotGrad)"/><circle cx="107.7" cy="328.5" r="1.8" fill="url(#dotGrad)"/><circle cx="101.3" cy="322.1" r="2.8" fill="url(#dotGrad)"/><circle cx="166.1" cy="155.1" r="2.2" fill="url(#dotGrad)"/><circle cx="262.2" cy="563.1" r="1.9" fill="url(#dotGrad)"/><circle cx="565.7" cy="484.6" r="2.6" fill="url(#dotGrad)"/><circle cx="537.2" cy="393.1" r="1.6" fill="url(#dotGrad)"/><circle cx="633.2" cy="307.1" r="2.2" fill="url(#dotGrad)"/><circle cx="160.7" cy="180.8" r="4.4" fill="url(#dotGradHub)"/><circle cx="498.7" cy="581.6" r="1.6" fill="url(#dotGrad)"/><circle cx="576.1" cy="432.7" r="1.7" fill="url(#dotGrad)"/><circle cx="431.9" cy="572.9" r="2.5" fill="url(#dotGrad)"/><circle cx="88.7" cy="397.9" r="1.7" fill="url(#dotGrad)"/><circle cx="87.5" cy="439.0" r="2.4" fill="url(#dotGrad)"/><circle cx="201.6" cy="172.1" r="2.4" fill="url(#dotGrad)"/><circle cx="108.5" cy="340.3" r="2.1" fill="url(#dotGrad)"/><circle cx="301.3" cy="556.4" r="1.6" fill="url(#dotGrad)"/><circle cx="635.0" cy="335.7" r="2.2" fill="url(#dotGrad)"/><circle cx="274.9" cy="100.3" r="2.4" fill="url(#dotGrad)"/><circle cx="239.0" cy="572.4" r="2.2" fill="url(#dotGrad)"/><circle cx="589.8" cy="458.0" r="2.2" fill="url(#dotGrad)"/><circle cx="360.4" cy="141.3" r="2.0" fill="url(#dotGrad)"/><circle cx="123.5" cy="527.3" r="2.7" fill="url(#dotGrad)"/><circle cx="581.9" cy="274.7" r="2.6" fill="url(#dotGrad)"/><circle cx="402.4" cy="581.2" r="2.2" fill="url(#dotGrad)"/><circle cx="479.5" cy="251.8" r="1.8" fill="url(#dotGrad)"/><circle cx="126.7" cy="500.3" r="2.2" fill="url(#dotGrad)"/><circle cx="529.9" cy="433.8" r="1.5" fill="url(#dotGrad)"/><circle cx="314.0" cy="548.0" r="2.2" fill="url(#dotGrad)"/><circle cx="518.5" cy="448.8" r="2.5" fill="url(#dotGrad)"/><circle cx="354.9" cy="45.4" r="2.1" fill="url(#dotGrad)"/><circle cx="524.6" cy="509.0" r="1.6" fill="url(#dotGrad)"/><circle cx="586.2" cy="437.3" r="2.0" fill="url(#dotGrad)"/><circle cx="418.0" cy="83.6" r="2.7" fill="url(#dotGrad)"/><circle cx="68.7" cy="433.0" r="2.1" fill="url(#dotGrad)"/><circle cx="430.3" cy="571.0" r="2.1" fill="url(#dotGrad)"/><circle cx="195.6" cy="156.9" r="2.7" fill="url(#dotGrad)"/><circle cx="511.5" cy="494.1" r="1.9" fill="url(#dotGrad)"/><circle cx="307.7" cy="598.6" r="2.3" fill="url(#dotGrad)"/><circle cx="594.7" cy="293.0" r="1.7" fill="url(#dotGrad)"/><circle cx="508.1" cy="191.5" r="1.5" fill="url(#dotGrad)"/><circle cx="389.0" cy="534.5" r="1.8" fill="url(#dotGrad)"/><circle cx="158.5" cy="115.4" r="1.9" fill="url(#dotGrad)"/><circle cx="559.8" cy="500.4" r="2.3" fill="url(#dotGrad)"/><circle cx="327.1" cy="588.2" r="2.5" fill="url(#dotGrad)"/><circle cx="373.7" cy="105.2" r="2.2" fill="url(#dotGrad)"/><circle cx="585.0" cy="461.7" r="1.8" fill="url(#dotGrad)"/><circle cx="533.5" cy="463.0" r="2.1" fill="url(#dotGrad)"/><circle cx="148.5" cy="198.5" r="2.0" fill="url(#dotGrad)"/><circle cx="220.5" cy="464.5" r="1.7" fill="url(#dotGrad)"/><circle cx="68.0" cy="367.9" r="2.3" fill="url(#dotGrad)"/><circle cx="104.8" cy="221.0" r="2.2" fill="url(#dotGrad)"/><circle cx="473.1" cy="533.5" r="2.3" fill="url(#dotGrad)"/><circle cx="558.2" cy="198.5" r="1.8" fill="url(#dotGrad)"/><circle cx="424.2" cy="551.8" r="2.6" fill="url(#dotGrad)"/><circle cx="322.1" cy="70.9" r="1.9" fill="url(#dotGrad)"/><circle cx="570.5" cy="265.3" r="2.7" fill="url(#dotGrad)"/><circle cx="504.9" cy="189.4" r="2.8" fill="url(#dotGrad)"/><circle cx="522.5" cy="479.5" r="1.7" fill="url(#dotGrad)"/><circle cx="604.9" cy="405.7" r="2.4" fill="url(#dotGrad)"/><circle cx="271.2" cy="105.4" r="1.6" fill="url(#dotGrad)"/><circle cx="328.2" cy="609.0" r="2.0" fill="url(#dotGrad)"/><circle cx="283.0" cy="543.6" r="1.7" fill="url(#dotGrad)"/><circle cx="451.9" cy="561.1" r="3.6" fill="url(#dotGradHub)"/><circle cx="372.2" cy="575.9" r="2.4" fill="url(#dotGrad)"/><circle cx="82.5" cy="239.2" r="2.8" fill="url(#dotGrad)"/><circle cx="299.5" cy="550.8" r="2.2" fill="url(#dotGrad)"/><circle cx="558.5" cy="215.1" r="2.2" fill="url(#dotGrad)"/><circle cx="309.2" cy="593.8" r="3.5" fill="url(#dotGradHub)"/><circle cx="87.0" cy="429.8" r="1.5" fill="url(#dotGrad)"/><circle cx="165.2" cy="529.0" r="2.2" fill="url(#dotGrad)"/><circle cx="96.8" cy="221.5" r="1.7" fill="url(#dotGrad)"/><circle cx="550.9" cy="167.7" r="1.8" fill="url(#dotGrad)"/><circle cx="561.2" cy="312.7" r="2.8" fill="url(#dotGrad)"/><circle cx="159.7" cy="234.2" r="4.5" fill="url(#dotGradHub)"/><circle cx="502.7" cy="537.6" r="2.1" fill="url(#dotGrad)"/><circle cx="552.4" cy="205.6" r="1.9" fill="url(#dotGrad)"/><circle cx="262.2" cy="95.6" r="2.2" fill="url(#dotGrad)"/><circle cx="177.1" cy="152.4" r="4.2" fill="url(#dotGradHub)"/><circle cx="95.0" cy="367.5" r="2.6" fill="url(#dotGrad)"/><circle cx="562.2" cy="339.1" r="2.1" fill="url(#dotGrad)"/><circle cx="517.9" cy="431.0" r="2.0" fill="url(#dotGrad)"/><circle cx="530.3" cy="202.1" r="1.7" fill="url(#dotGrad)"/><circle cx="321.1" cy="107.1" r="1.5" fill="url(#dotGrad)"/><circle cx="508.3" cy="240.4" r="2.5" fill="url(#dotGrad)"/><circle cx="207.0" cy="518.7" r="2.6" fill="url(#dotGrad)"/><circle cx="468.8" cy="204.7" r="2.0" fill="url(#dotGrad)"/><circle cx="109.2" cy="472.3" r="2.2" fill="url(#dotGrad)"/><circle cx="171.2" cy="256.9" r="2.5" fill="url(#dotGrad)"/><circle cx="185.3" cy="185.4" r="2.7" fill="url(#dotGrad)"/><circle cx="124.1" cy="164.0" r="2.5" fill="url(#dotGrad)"/><circle cx="502.1" cy="429.4" r="2.0" fill="url(#dotGrad)"/><circle cx="465.4" cy="222.0" r="2.6" fill="url(#dotGrad)"/><circle cx="311.3" cy="131.8" r="2.5" fill="url(#dotGrad)"/><circle cx="92.3" cy="201.9" r="2.0" fill="url(#dotGrad)"/><circle cx="100.7" cy="433.8" r="1.6" fill="url(#dotGrad)"/><circle cx="340.3" cy="101.4" r="3.8" fill="url(#dotGradHub)"/><circle cx="556.7" cy="381.0" r="2.3" fill="url(#dotGrad)"/><circle cx="368.3" cy="566.5" r="1.8" fill="url(#dotGrad)"/><circle cx="274.4" cy="144.9" r="2.4" fill="url(#dotGrad)"/><circle cx="560.1" cy="219.8" r="2.4" fill="url(#dotGrad)"/><circle cx="329.9" cy="616.8" r="2.2" fill="url(#dotGrad)"/><circle cx="230.1" cy="113.3" r="2.8" fill="url(#dotGrad)"/><circle cx="423.3" cy="611.2" r="2.4" fill="url(#dotGrad)"/><circle cx="181.9" cy="90.9" r="4.1" fill="url(#dotGradHub)"/><circle cx="85.8" cy="437.1" r="2.5" fill="url(#dotGrad)"/><circle cx="223.0" cy="139.6" r="3.6" fill="url(#dotGradHub)"/><circle cx="402.8" cy="527.2" r="2.0" fill="url(#dotGrad)"/><circle cx="575.5" cy="199.2" r="1.8" fill="url(#dotGrad)"/><circle cx="499.4" cy="190.8" r="2.2" fill="url(#dotGrad)"/><circle cx="227.2" cy="594.2" r="2.8" fill="url(#dotGrad)"/><circle cx="464.0" cy="482.7" r="2.8" fill="url(#dotGrad)"/><circle cx="486.1" cy="135.5" r="4.1" fill="url(#dotGradHub)"/><circle cx="273.8" cy="73.6" r="4.5" fill="url(#dotGradHub)"/><circle cx="457.8" cy="551.5" r="1.7" fill="url(#dotGrad)"/><circle cx="105.3" cy="415.2" r="1.7" fill="url(#dotGrad)"/><circle cx="106.8" cy="479.9" r="4.5" fill="url(#dotGradHub)"/><circle cx="183.6" cy="182.2" r="2.0" fill="url(#dotGrad)"/><circle cx="473.4" cy="127.3" r="2.3" fill="url(#dotGrad)"/><circle cx="576.4" cy="313.2" r="1.9" fill="url(#dotGrad)"/><circle cx="588.8" cy="389.9" r="2.2" fill="url(#dotGrad)"/><circle cx="545.7" cy="128.6" r="2.4" fill="url(#dotGrad)"/><circle cx="102.5" cy="227.2" r="1.5" fill="url(#dotGrad)"/><circle cx="248.8" cy="574.5" r="1.6" fill="url(#dotGrad)"/><circle cx="500.3" cy="523.9" r="2.5" fill="url(#dotGrad)"/><circle cx="56.8" cy="422.6" r="2.7" fill="url(#dotGrad)"/><circle cx="360.5" cy="598.5" r="1.6" fill="url(#dotGrad)"/><circle cx="525.6" cy="566.9" r="4.5" fill="url(#dotGradHub)"/><circle cx="91.6" cy="426.8" r="2.1" fill="url(#dotGrad)"/><circle cx="131.5" cy="118.0" r="2.8" fill="url(#dotGrad)"/><circle cx="448.5" cy="52.2" r="2.2" fill="url(#dotGrad)"/><circle cx="220.0" cy="65.1" r="2.4" fill="url(#dotGrad)"/><circle cx="43.9" cy="386.6" r="2.8" fill="url(#dotGrad)"/><circle cx="642.0" cy="360.5" r="2.3" fill="url(#dotGrad)"/><circle cx="273.1" cy="47.8" r="2.3" fill="url(#dotGrad)"/><circle cx="297.8" cy="638.5" r="4.0" fill="url(#dotGradHub)"/><circle cx="241.4" cy="53.3" r="1.7" fill="url(#dotGrad)"/><circle cx="110.1" cy="138.7" r="2.4" fill="url(#dotGrad)"/><circle cx="100.0" cy="529.7" r="1.8" fill="url(#dotGrad)"/><circle cx="588.5" cy="173.9" r="2.0" fill="url(#dotGrad)"/><circle cx="618.3" cy="214.6" r="2.2" fill="url(#dotGrad)"/><circle cx="547.2" cy="560.4" r="2.7" fill="url(#dotGrad)"/><circle cx="123.6" cy="122.1" r="1.8" fill="url(#dotGrad)"/><circle cx="122.8" cy="552.3" r="2.7" fill="url(#dotGrad)"/><circle cx="562.1" cy="129.6" r="2.3" fill="url(#dotGrad)"/><circle cx="624.3" cy="236.2" r="1.9" fill="url(#dotGrad)"/><circle cx="165.7" cy="95.8" r="2.2" fill="url(#dotGrad)"/>
+</svg>
+        <div class="photo-frame">
+          <div class="ring">
+            <div class="photo-wrap">
+              <img id="profilePhoto" src="profile.jpg" alt="Harshith A." onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 400 500%27%3E%3Crect width=%27400%27 height=%27500%27 fill=%27%231c2431%27/%3E%3Ccircle cx=%27200%27 cy=%27190%27 r=%2780%27 fill=%27%232a3342%27/%3E%3Cpath d=%27M60 460 C60 340 340 340 340 460 Z%27 fill=%27%232a3342%27/%3E%3C/svg%3E';">
+            </div>
+          </div>
+          <div class="badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 20V10"/><path d="M12 20V4"/><path d="M20 20v-7"/></svg>
+            &lt;Analytical Engineer /&gt;
+          </div>
+        </div>
+      </div>
+
+      <div class="eyebrow"><span class="dot"></span> open_to_work: true</div>
+      <h1 class="name">Harshith A.</h1>
+      <p class="role">Data Analyst · Analytics Engineer · AI/ML<span class="cursor">▍</span></p>
+      <p class="tagline">I turn messy, large-scale data into pipelines, dashboards, and models that teams actually trust — from retail floors to research labs.</p>
+      <div class="cta-row">
+        <a href="#projects" class="btn btn-primary">View Projects →</a>
+        <a href="#contact" class="btn btn-ghost">Get in Touch</a>
+      </div>
+    </div>
+
+    <nav class="side-nav" id="sidenav">
+      <ol>
+        <li><a href="#about" data-idx="01">About</a></li>
+        <li><a href="#experience" data-idx="02">Experience</a></li>
+        <li><a href="#skills" data-idx="03">Skills</a></li>
+        <li><a href="#projects" data-idx="04">Projects</a></li>
+        <li><a href="#education" data-idx="05">Education</a></li>
+        <li><a href="#contact" data-idx="06">Contact</a></li>
+      </ol>
+    </nav>
+
+    <div class="social-row">
+      <a href="https://github.com/hars8694-lab" target="_blank" rel="noopener" aria-label="GitHub">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.57.1.78-.25.78-.55 0-.27-.01-1.16-.02-2.11-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.02 1.75 2.68 1.25 3.34.95.1-.74.4-1.25.72-1.54-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.77.11 3.06.74.8 1.19 1.83 1.19 3.09 0 4.43-2.7 5.41-5.27 5.69.42.36.78 1.07.78 2.17 0 1.57-.01 2.83-.01 3.22 0 .3.21.66.79.55A10.53 10.53 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+      </a>
+      <a href="https://www.linkedin.com/in/harshith-amgoth" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.03-1.85-3.03-1.86 0-2.14 1.45-2.14 2.94v5.66H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.12 20.45H3.56V9h3.56v11.45ZM22.22 0H1.77C.8 0 0 .78 0 1.75v20.5C0 23.22.8 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.75V1.75C24 .78 23.2 0 22.22 0Z"/></svg>
+      </a>
+      <a href="mailto:Hars8694@gmail.com" aria-label="Email">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 6 12 13 2 6"/><path d="M2 6h20v12H2z"/></svg>
+      </a>
+    </div>
+  </aside>
+
+  <main class="content" id="top">
+    <div class="content-inner">
+
+      <section id="about" class="reveal">
+        <div class="hero-art" aria-hidden="true">
+          <svg viewBox="0 0 560 560" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="235" cy="478" rx="150" ry="16" fill="#000000" opacity="0.35"/>
+            <ellipse cx="165" cy="430" rx="92" ry="40" fill="#3a2f22" transform="rotate(-10 165 430)"/>
+            <ellipse cx="305" cy="430" rx="92" ry="40" fill="#4b3c2a" transform="rotate(10 305 430)"/>
+            <rect x="165" y="248" width="150" height="175" rx="60" fill="#0f766e"/>
+            <rect x="150" y="330" width="46" height="110" rx="23" fill="#0f766e" transform="rotate(18 150 330)"/>
+            <rect x="285" y="330" width="46" height="110" rx="23" fill="#0c5c56" transform="rotate(-18 335 330)"/>
+            <circle cx="185" cy="418" r="18" fill="#caa27a"/>
+            <circle cx="295" cy="418" r="18" fill="#caa27a"/>
+            <rect x="222" y="220" width="36" height="36" fill="#caa27a"/>
+            <circle cx="240" cy="185" r="54" fill="#caa27a"/>
+            <path d="M 186 190 A 54 54 0 0 1 294 190 L 294 172 A 54 50 0 0 0 186 172 Z" fill="#24190f"/>
+            <path d="M 186 178 Q 180 210 195 232 L 205 232 Q 190 205 196 178 Z" fill="#24190f"/>
+            <path d="M 294 178 Q 300 210 285 232 L 275 232 Q 290 205 284 178 Z" fill="#24190f"/>
+            <circle cx="222" cy="190" r="4" fill="#241d14"/>
+            <circle cx="258" cy="190" r="4" fill="#241d14"/>
+            <path d="M 220 208 Q 240 220 260 208" stroke="#241d14" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <rect x="165" y="392" width="150" height="14" rx="6" fill="#241d14" transform="rotate(-2 240 399)"/>
+            <rect x="178" y="322" width="120" height="82" rx="8" fill="#241d14" transform="rotate(-2 238 363)"/>
+            <rect x="186" y="330" width="104" height="66" rx="4" fill="#1a3a3f" transform="rotate(-2 238 363)"/>
+            <g transform="rotate(-2 238 363)">
+              <rect x="194" y="338" width="40" height="5" rx="2.5" fill="#4ade80"/>
+              <rect x="194" y="349" width="60" height="5" rx="2.5" fill="#93c5fd"/>
+              <rect x="200" y="360" width="50" height="5" rx="2.5" fill="#fcd34d"/>
+              <rect x="194" y="371" width="35" height="5" rx="2.5" fill="#f0abfc"/>
+              <rect x="194" y="382" width="55" height="5" rx="2.5" fill="#93c5fd"/>
+            </g>
+            <circle cx="300" cy="118" r="7" fill="#1c2431" stroke="#3a4459" stroke-width="2"/>
+            <circle cx="320" cy="90" r="10" fill="#1c2431" stroke="#3a4459" stroke-width="2"/>
+            <circle cx="345" cy="60" r="14" fill="#1c2431" stroke="#3a4459" stroke-width="2"/>
+            <ellipse cx="360" cy="38" rx="17" ry="15" fill="#1c2431" stroke="#3a4459" stroke-width="2.5"/>
+            <ellipse cx="382" cy="22" rx="13" ry="12" fill="#1c2431" stroke="#3a4459" stroke-width="2.5"/>
+            <rect x="330" y="20" width="210" height="120" rx="34" fill="#1c2431" stroke="#3a4459" stroke-width="2.5"/>
+            <circle cx="352" cy="46" r="4" fill="#f87171"/>
+            <circle cx="365" cy="46" r="4" fill="#fbbf24"/>
+            <circle cx="378" cy="46" r="4" fill="#4ade80"/>
+            <rect x="347" y="64" width="30" height="5" rx="2.5" fill="#4ec9b0"/>
+            <rect x="347" y="75" width="55" height="5" rx="2.5" fill="#d2a8ff"/>
+            <rect x="354" y="86" width="45" height="5" rx="2.5" fill="#f2c078"/>
+            <rect x="347" y="97" width="38" height="5" rx="2.5" fill="#4ec9b0"/>
+            <rect x="347" y="108" width="20" height="5" rx="2.5" fill="#d2a8ff"/>
+            <rect x="370" y="108" width="4" height="8" fill="#e6edf3" opacity="0.8"/>
+          </svg>
+        </div>
+        <div class="section-head">
+          <div class="kicker"><span class="idx">01</span> about.py</div>
+          <h2>Data-driven, product-minded, detail-obsessed.</h2>
+        </div>
+        <div class="about-grid">
+          <div>
+            <p>I'm a Data Analyst and Analytics Engineer with 3+ years of experience turning complex, large-scale data into clear, actionable insights across retail, healthcare research, and enterprise technology settings.</p>
+            <p>I work across the full stack of analytics — from building automated ETL pipelines and optimizing SQL, to designing BI dashboards in Power BI and Tableau, to shipping applied machine learning and LLM-powered products end to end.</p>
+            <p>I care most about reliability: pipelines that don't break, dashboards analysts can trust, and models that hold up outside the notebook.</p>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="num">3+</div><div class="label">Years of experience</div></div>
+            <div class="stat"><div class="num">100M+</div><div class="label">Records processed monthly</div></div>
+            <div class="stat"><div class="num">50%</div><div class="label">Faster reporting turnaround</div></div>
+            <div class="stat"><div class="num">25%</div><div class="label">Fewer data errors reaching dashboards</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="experience" class="reveal">
+        <div class="section-head">
+          <div class="kicker"><span class="idx">02</span> experience.js</div>
+          <h2>Where I've built things.</h2>
+        </div>
+        <div class="timeline">
+
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-head">
+              <div><span class="tl-role">Analytical Engineer</span> · <span class="tl-company">7-Eleven</span></div>
+              <div class="tl-meta">Irving, TX · Jun 2024 – May 2026</div>
+            </div>
+            <ul>
+              <li>Built automated data pipelines with Azure Data Factory (SQL Server → Power BI), cutting manual dashboard refresh time and delivering faster, more reliable store-level reporting.</li>
+              <li>Unified POS, catalog, loyalty, and store metadata into a single analysis-ready layer using Python and PostgreSQL ETL pipelines.</li>
+              <li>Cut data errors reaching dashboards by ~25% with automated SQL/Python validation checks for duplicates, missing records, and pricing issues.</li>
+              <li>Built XGBoost and scikit-learn regression models on distribution and delivery data to predict supplier delays, contributing to an ~18% reduction in disruptions.</li>
+              <li>Cut turnaround time from 24 hours to 12 hours (50% faster) by rewriting ad-hoc PostgreSQL queries with CTEs, window functions, and optimized indexing.</li>
+              <li>Led SQL optimization and dashboard storytelling sessions for the analytics team, reducing reporting rework.</li>
+            </ul>
+          </div>
+
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-head">
+              <div><span class="tl-role">Data Assistant (Research)</span> · <span class="tl-company">University of North Texas</span></div>
+              <div class="tl-meta">Denton, TX · Jan 2023 – Dec 2023</div>
+            </div>
+            <ul>
+              <li>Improved understanding of young-adult health behaviour patterns by 15% through statistical analysis in Python and SAS.</li>
+              <li>Cleaned and validated raw health datasets using SQL and Excel to deliver research-grade, analysis-ready data.</li>
+              <li>Translated findings into visual narratives with Power BI and Looker Studio as part of a 3-person research team.</li>
+              <li>Presented A/B test findings with confidence intervals and effect sizes on program adoption reach.</li>
+              <li>Applied logistic regression and random forest classification alongside SPSS/SAS to validate behavioural-outcome correlations.</li>
+            </ul>
+          </div>
+
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-head">
+              <div><span class="tl-role">Data Analyst</span> · <span class="tl-company">Ideal Source Technologies</span></div>
+              <div class="tl-meta">Hyderabad, India · Oct 2021 – Dec 2022</div>
+            </div>
+            <ul>
+              <li>Owned ETL pipelines on Apache Airflow, PySpark, and AWS, processing 100M+ records monthly across supply chain, finance, and public health data.</li>
+              <li>Cut manual data prep time by ~60%, turning multi-day Excel processes into a single scheduled Alteryx run.</li>
+              <li>Reduced analyst dependency on report requests by ~35% by building Qlik Sense associative dashboards for self-service reporting.</li>
+              <li>Engineered demand-forecasting ML models (XGBoost, Pandas, PySpark) that improved data accuracy by 22% and reduced emergency procurement costs.</li>
+              <li>Delivered analytics aligned with shifting priorities via Agile/JIRA sprints with researchers and cross-functional teams.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <section id="skills" class="reveal">
+        <div class="section-head">
+          <div class="kicker"><span class="idx">03</span> skills.json</div>
+          <h2>Tools of the trade.</h2>
+        </div>
+        <div class="skill-groups">
+          <div class="skill-card">
+            <h3>Languages</h3>
+            <div class="chips"><span class="chip">SQL</span><span class="chip">Python</span><span class="chip">R</span><span class="chip">SAS</span></div>
+          </div>
+          <div class="skill-card">
+            <h3>BI &amp; Visualization</h3>
+            <div class="chips"><span class="chip">Power BI</span><span class="chip">Tableau</span><span class="chip">Qlik Sense</span><span class="chip">Looker Studio</span></div>
+          </div>
+          <div class="skill-card">
+            <h3>Data Engineering</h3>
+            <div class="chips"><span class="chip">ETL Pipelines</span><span class="chip">Apache Airflow</span><span class="chip">PySpark</span><span class="chip">Alteryx</span><span class="chip">Snowflake</span><span class="chip">Amazon Redshift</span><span class="chip">dbt</span></div>
+          </div>
+          <div class="skill-card">
+            <h3>Cloud &amp; DevOps</h3>
+            <div class="chips"><span class="chip">AWS</span><span class="chip">Azure</span><span class="chip">Docker</span><span class="chip">Kubernetes</span><span class="chip">Git</span></div>
+          </div>
+          <div class="skill-card">
+            <h3>Databases</h3>
+            <div class="chips"><span class="chip">PostgreSQL</span><span class="chip">MySQL</span><span class="chip">MongoDB</span></div>
+          </div>
+          <div class="skill-card">
+            <h3>Machine Learning &amp; AI</h3>
+            <div class="chips"><span class="chip">Scikit-learn</span><span class="chip">TensorFlow</span><span class="chip">PyTorch</span><span class="chip">XGBoost</span><span class="chip">HuggingFace</span><span class="chip">LangChain</span><span class="chip">MLflow</span></div>
+          </div>
+          <div class="skill-card">
+            <h3>Methods</h3>
+            <div class="chips"><span class="chip">A/B Testing</span><span class="chip">Demand Forecasting</span><span class="chip">Predictive Modeling</span><span class="chip">Regression</span><span class="chip">Clustering</span><span class="chip">Dimensional Modelling</span><span class="chip">Agile / JIRA</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="projects" class="reveal">
+        <div class="section-head">
+          <div class="kicker"><span class="idx">04</span> projects.tsx</div>
+          <h2>Something I built end to end.</h2>
+        </div>
+        <div class="project-card">
+          <div class="win-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="tab">moodmate.py</span></div>
+          <div class="card-body">
+            <h3>MoodMate — Emotion-Aware AI Companion</h3>
+            <p class="desc">Fine-tuned a DistilRoBERTa multi-label classifier on Google's GoEmotions dataset (58k samples, 27 emotions) to 0.59 micro-F1, and engineered an LLM response pipeline (Groq API) that conditions empathetic replies on the detected emotional state. Shipped as a full product: Streamlit chat UI, SQLite mood journal with Plotly analytics dashboard, a crisis-detection safety layer with pytest unit tests, and secure secrets management — deployed on Streamlit Community Cloud.</p>
+            <div class="chips" style="margin-bottom:18px;">
+              <span class="chip">DistilRoBERTa</span><span class="chip">HuggingFace</span><span class="chip">Groq API / LLM</span><span class="chip">Streamlit</span><span class="chip">SQLite</span><span class="chip">Plotly</span><span class="chip">pytest</span>
+            </div>
+            <div class="project-links">
+              <a href="https://github.com/hars8694-lab/MoodMate" target="_blank" rel="noopener" class="btn btn-ghost">GitHub Repo →</a>
+              <a href="https://moodmate-aolrddhkapglkkpzovxhgf.streamlit.app/" target="_blank" rel="noopener" class="btn btn-primary">Live Demo →</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="education" class="reveal">
+        <div class="section-head">
+          <div class="kicker"><span class="idx">05</span> education.md</div>
+          <h2>Academic background.</h2>
+        </div>
+        <div class="edu-card">
+          <div>
+            <h3>Master of Science, Advanced Data Analytics &amp; Statistics</h3>
+            <div class="school">University of North Texas, Toulouse Graduate School</div>
+          </div>
+          <div class="meta">Denton, TX<br>Jan 2023 – May 2024 · GPA 3.3/4.0</div>
+        </div>
+        <div class="edu-card">
+          <div>
+            <h3>Bachelor of Technology, Computer Science</h3>
+            <div class="school">Malla Reddy Engineering College</div>
+          </div>
+          <div class="meta">Hyderabad, Telangana<br>Jun 2017 – Aug 2021</div>
+        </div>
+      </section>
+
+      <section id="contact" class="reveal" style="border-bottom: none;">
+        <div class="section-head">
+          <div class="kicker"><span class="idx">06</span> contact.sh</div>
+        </div>
+        <div class="contact-box">
+          <div class="win-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="tab">contact.sh</span></div>
+          <div class="card-body">
+            <h2>Let's build something reliable.</h2>
+            <p>Open to Data Analyst, Analytics Engineer, and AI/ML roles. Based in Hyderabad, India.</p>
+            <div class="cta-row">
+              <a href="mailto:Hars8694@gmail.com" class="btn btn-primary">Hars8694@gmail.com</a>
+              <a href="tel:+916304259461" class="btn btn-ghost">+91 63042 59461</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        © <span id="year"></span> Harshith A. — Built with data, coffee, and a bit of AI.
+      </footer>
+
+    </div>
+  </main>
+
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // falling-code background — AI/terminal themed digital rain
+  (function(){
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+    const glyphs = '01{}<>/;:=+-*∑Σ∇λβ01AIMLSQLGPU01'.split('');
+    const colors = ['#4ec9b0', '#d2a8ff', '#f2c078', '#6ee7c5'];
+    const fontSize = 15;
+    let cols, drops, w, h;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function resize(){
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+      cols = Math.floor(w / fontSize);
+      drops = new Array(cols).fill(0).map(() => Math.floor(Math.random() * -40));
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function frame(){
+      ctx.fillStyle = 'rgba(13,17,23,0.14)';
+      ctx.fillRect(0, 0, w, h);
+      ctx.font = fontSize + 'px ' + (getComputedStyle(document.documentElement).getPropertyValue('--mono') || 'monospace');
+      for (let i = 0; i < cols; i++){
+        const glyph = glyphs[Math.floor(Math.random() * glyphs.length)];
+        ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+        ctx.globalAlpha = Math.random() * 0.5 + 0.35;
+        ctx.fillText(glyph, i * fontSize, drops[i] * fontSize);
+        ctx.globalAlpha = 1;
+        if (drops[i] * fontSize > h && Math.random() > 0.975) drops[i] = Math.floor(Math.random() * -20);
+        drops[i]++;
+      }
+    }
+
+    if (!reduceMotion){
+      setInterval(frame, 55);
+    } else {
+      ctx.fillStyle = 'rgba(13,17,23,1)';
+      ctx.fillRect(0, 0, w, h);
+    }
+  })();
+
+  // scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el => io.observe(el));
+
+  // active nav link on scroll (numbered sidebar index)
+  const navA = document.querySelectorAll('.side-nav a');
+  const spy = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        navA.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+      }
+    });
+  }, { rootMargin: '-35% 0px -55% 0px' });
+  document.querySelectorAll('.content section[id]').forEach(s => spy.observe(s));
+</script>
+</body>
+</html>
